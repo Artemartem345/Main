@@ -16,10 +16,12 @@ metadata = MetaData()
 Base = declarative_base()
 
 
-def get_db(request: Request):
-    """отдает текущую бд сессию """
-    return request.state.db
-
+def get_db():
+    session = sessionlocal()
+    try:
+        yield session
+    finally:
+        session.close()
 
 class Menu(Base):
     __tablename__ = 'menus'
@@ -54,7 +56,7 @@ class Dish(Base):
     submenu_id = Column(UUID, ForeignKey('submenus.id'))
     submenu = relationship('Submenu', back_populates='dishes')
 
-
+Base.metadata.create_all(bind=engine)
 
 ### для миграции просто пропиши alembic upgrade head в консоли
 

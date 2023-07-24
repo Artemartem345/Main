@@ -5,7 +5,8 @@ from schema import *
 # Menu
 def create_menu(db: Session, menu: MenuCreate):
     """функция для создания меню"""
-    _menu = Menu(**menu.dict(exclude_unset=True))
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAA ", menu)
+    _menu = Menu(**menu.dict())
     db.add(_menu)
     db.commit()
     db.refresh(_menu)
@@ -19,11 +20,11 @@ def remove_menu(db:Session, menu_id:UUID):
     db.delete(_menu)
     db.commit()
     
-def update_menu(db:Session, menu_id:int, data:MenuUpdate):
+def update_menu(db:Session, menu_id:str, data:MenuUpdate):
     menu = db.query(Menu).filter(Menu.id == menu_id).first()
+    print('TESTSTSTSTSTSTTSTST', menu)
     menu.title = data.title
     menu.description = data.description
-    db.add(menu)
     db.commit()
     db.refresh(menu)
     print(menu)

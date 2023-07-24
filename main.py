@@ -10,12 +10,12 @@ app = FastAPI()
 
 
 
-@app.post('/api/v1/menus/',response_model=MenuResponse, status_code=201)
-def post_menu(target_menu_id, target_menu_title, target_menu_description, data: MenuCreate, db: Session = Depends(get_db)):
+@app.post('/api/v1/menus/', response_model=MenuResponse, status_code=201)
+def post_menu(data: MenuCreate,
+              db: Session = Depends(get_db)):
     """Ручка для пост запроса создания меню"""
-    create_new_menu = create_menu(target_menu_id, target_menu_title, target_menu_description, data, db)
-    return Response(create_new_menu, status.HTTP_200_OK)
-
+    create_new_menu = create_menu(db, data)
+    return create_new_menu
 
 @app.get('/api/v1/menus/{menu_id}', response_model=MenuResponse, status_code=200)
 def get_menu(menu_id: uuid.UUID, db: Session = Depends(get_db)):
@@ -32,7 +32,7 @@ def get_menu_detail(menu_id: uuid.UUID, db: Session = Depends(get_db)):
 
 
 @app.patch('/api/v1/menus/{menu_id}', response_model=MenuResponse, status_code=200)
-def update(menu_id:uuid.UUID, data:MenuUpdate, db: Session = Depends(get_db)):
+def update(menu_id:uuid.UUID, data:MenuUpdate, db: Session = Depends(get_db)) -> str:
     menu = update_menu(db=db, menu_id=menu_id, data=data)
     return menu
 
@@ -59,16 +59,16 @@ def update(menu_id:uuid.UUID, data:MenuUpdate, db: Session = Depends(get_db)):
 
 
 
-@app.middleware('http')
-def db_session_middleware(request: Request, call_next):
-    """это middleware для того чтобы к реквесту нашу бд сессию прикрепить"""
-    response = Response('Internal server error', status_code=500)
-    try:
-        request.state.db = sessionlocal
-        response = call_next(request)
-    finally:
-        request.state.db.close()
-    return response
+# @app.middleware('http')
+# def db_session_middleware(request: Request, call_next):
+#     """это middleware для того чтобы к реквесту нашу бд сессию прикрепить"""
+#     response = Response('Internal server error', status_code=500)
+#     try:
+#         request.state.db = sessionlocal
+#         response = call_next(request)
+#     finally:
+#         request.state.db.close()
+#     return response
 
 
 if __name__ == '__main__':
