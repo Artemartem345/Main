@@ -49,32 +49,53 @@ def update_menu(db:Session, menu_id:uuid.UUID, data:MenuUpdate):
 def get_submenu_all(db:Session):
     return db.query(Submenu).all()
 
-def get_submenu_with_menu(db:Session, menu, submenu):
+def get_submenu_with_menu(db:Session, menu_id, submenu_id):
     submenu = db.query(Submenu).filter_by(
-        id=submenu,
-        menu_id=menu
+        id=submenu_id,
+        menu_id=menu_id
         ).first()
+    if not submenu:
+        raise HTTPException(
+            detail='submenu not found',
+            status_code=status.HTTP_404_NOT_FOUND
+            
+        )
     return submenu
 
-def create_submenu(db: Session, submenu:uuid.UUID):
-    _menu = Submenu(**submenu)
-    db.add(_menu)
+def create_submenu(db:Session, menu_id: uuid.UUID, submenu: SubmenuCreate):
+    submenu = Submenu(
+        **submenu.dict(),
+        menu_id=menu_id,
+        id=uuid.uuid4()
+    )
+    db.add(submenu)
     db.commit()
-    db.refresh(_menu)
-    return _menu
+    db.refresh(submenu)
 
-def remove_submenu(db:Session, submenu_id: UUID):
-    _menu = get_submenu_with_menu(title=submenu_id.title, description=submenu_id.description)
+    return submenu
+
+def remove_submenu(db:Session, submenu_id: uuid.UUID, menu_id: uuid.UUID):
+    _menu = get_submenu_with_menu(db=db,menu_id=menu_id, submenu_id=submenu_id)
     db.delete(_menu)
     db.commit()
     
-def update_submenu(db:Session, submenu_id:UUID, menu_id, data=SubmenuUpdate):
-    _submenu = get_submenu_with_menu(db=db, submenu_id=submenu_id, menu_id=menu_id)
+def update_submenu(
+        db: Session,
+        menu_id: uuid.UUID,
+        submenu_id: uuid.UUID,
+        data: SubmenuUpdate
+):
+    submenu = get_submenu_with_menu(
+        db=db,
+        menu_id=menu_id,
+        submenu_id=submenu_id
+    )
+
+    submenu.title = data.title
+    submenu.description = data.description
+
     db.commit()
-    db.refresh(_submenu)
-    return _submenu
-
-
+    db.refresh(submenu)
 def get_dish(db:Session):
     return db.query(Dish).all()
 # Получение блюда по айдишнику

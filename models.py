@@ -36,7 +36,7 @@ class Menu(Base):
 class Submenu(Base):
     __tablename__ = 'submenus'
 
-    # обрати внимание как прописана автогенерация UUID
+    
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=False)

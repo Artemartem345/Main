@@ -55,18 +55,46 @@ def get_submenu_(db: Session = Depends(get_db)):
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
 def submenu_menu(menu_id:uuid.UUID, submenu_id:uuid.UUID, db: Session = Depends(get_db)):
-    return get_submenu_with_menu(menu_id, submenu_id, db)
+    return get_submenu_with_menu(db=db, menu_id=menu_id, submenu_id=submenu_id)
 
 
-@app.post('/api/v1/menus/{submenu_id}/submenus')
-def create_submenus(submenu:uuid.UUID, db: Session = Depends(get_db)):
-    create_new_submenu = create_submenu(submenu, db)
-    return create_new_submenu
+@app.post('/api/v1/menus/{menu_id}/submenus')
+def create_submenus(
+        menu_id: uuid.UUID,
+        data: SubmenuCreate,
+        db: Session = Depends(get_db)
+):
+    return create_submenu(menu_id=menu_id, submenu=data, db=db)
 
-@app.patch('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}')
-def update_submenu_(menu_id:uuid.UUID, submenu_id:uuid.UUID, data:SubmenuUpdate):
-    new_submenu = update_submenu(menu_id=menu_id, submenu_id=submenu_id, data=data)
-    return new_submenu
+@app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
+def update_submenu_(
+        menu_id: uuid.UUID,
+        submenu_id: uuid.UUID,
+        data: SubmenuUpdate,
+        db: Session = Depends(get_db)
+):
+    return update_submenu(
+        db=db,
+        menu_id=menu_id,
+        submenu_id=submenu_id,
+        data=data
+    )
+    
+@app.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
+def delete_submenu_(
+        menu_id: uuid.UUID,
+        submenu_id: uuid.UUID,
+        db: Session = Depends(get_db)
+):
+    remove_submenu(
+        db=db,
+        menu_id=menu_id,
+        submenu_id=submenu_id,
+    )
+    return {}
+
+
+
 
 if __name__ == '__main__':
     uvicorn.run(app)
