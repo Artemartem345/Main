@@ -1,57 +1,75 @@
 from sqlalchemy.orm import Session
 from models import *
 from schema import *
+from fastapi import HTTPException
+from starlette import status
 
 # Menu
 def create_menu(db: Session, menu: MenuCreate):
     """функция для создания меню"""
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAA ", menu)
     _menu = Menu(**menu.dict())
     db.add(_menu)
     db.commit()
     db.refresh(_menu)
     return _menu
 
-def get_menu_by_id(db: Session, menu_id: UUID):
-    return db.query(Menu).filter(Menu.id == menu_id).first()
+def get_all_menu(db:Session):
+    return db.query(Menu).all()
+
+
+def get_menu_by_id(db: Session, menu_id: int):
+    menu = db.query(Menu).filter(Menu.id == menu_id).first()
+    if not menu:
+        raise HTTPException(
+            detail='menu not found',
+            status_code=status.HTTP_404_NOT_FOUND
+            )
+        
+    return menu
+    
 
 def remove_menu(db:Session, menu_id:UUID):
-    _menu = get_menu_by_id(title=menu_id.title, description=menu_id.description)
+    _menu = get_menu_by_id(db=db, menu_id=menu_id)
     db.delete(_menu)
     db.commit()
     
-def update_menu(db:Session, menu_id:str, data:MenuUpdate):
+def update_menu(db:Session, menu_id:uuid.UUID, data:MenuUpdate):
+
     menu = db.query(Menu).filter(Menu.id == menu_id).first()
-    print('TESTSTSTSTSTSTTSTST', menu)
     menu.title = data.title
     menu.description = data.description
+    db.add(menu)
     db.commit()
     db.refresh(menu)
-    print(menu)
+  
     return menu
     
 
 # SubMenu
-def get_submenu(db:Session):
-    return db.query(SubmenuResponse).all()
+def get_submenu_all(db:Session):
+    return db.query(Submenu).all()
 
-def get_submenu_by_id(db:Session, menu_id: UUID):
-    return db.query(Submenu).filter(Submenu.id == menu_id).first()
+def get_submenu_with_menu(db:Session, menu, submenu):
+    submenu = db.query(Submenu).filter_by(
+        id=submenu,
+        menu_id=menu
+        ).first()
+    return submenu
 
-def create_submenu(db: Session, menu):
-    _menu = Submenu(**menu)
+def create_submenu(db: Session, submenu:uuid.UUID):
+    _menu = Submenu(**submenu)
     db.add(_menu)
     db.commit()
     db.refresh(_menu)
     return _menu
 
 def remove_submenu(db:Session, submenu_id: UUID):
-    _menu = get_submenu_by_id(title=submenu_id.title, description=submenu_id.description)
+    _menu = get_submenu_with_menu(title=submenu_id.title, description=submenu_id.description)
     db.delete(_menu)
     db.commit()
     
-def update_submenu(db:Session, submenu_id:UUID, data=SubmenuUpdate):
-    _submenu = get_submenu_by_id(db=db, submenu_id=submenu_id, _data=data)
+def update_submenu(db:Session, submenu_id:UUID, menu_id, data=SubmenuUpdate):
+    _submenu = get_submenu_with_menu(db=db, submenu_id=submenu_id, menu_id=menu_id)
     db.commit()
     db.refresh(_submenu)
     return _submenu

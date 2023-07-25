@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from starlette.responses import Response
 from starlette import status
 from crud import *
@@ -10,66 +10,63 @@ app = FastAPI()
 
 
 
-@app.post('/api/v1/menus/', response_model=MenuResponse, status_code=201)
+
+
+# get all menu
+@app.get('/api/v1/menus')
+def get_menu(db: Session = Depends(get_db)):
+    menu = get_all_menu(db=db)
+    return menu
+# get menu by id
+
+@app.get('/api/v1/menus/{menu_id}')
+def get_menu_id(menu_id:uuid.UUID, db:Session = Depends(get_db)):
+    return get_menu_by_id(db=db, menu_id=menu_id)
+    # menu = db.query(Menu).filter(Menu.id == menu_id).first()
+    # if menu is None:
+    #     raise HTTPException(staus_code=404, detail='menu not found')
+    # return menu
+
+# create menu
+@app.post('/api/v1/menus')
 def post_menu(data: MenuCreate,
               db: Session = Depends(get_db)):
-    """Ручка для пост запроса создания меню"""
     create_new_menu = create_menu(db, data)
     return create_new_menu
+# update menu
 
-@app.get('/api/v1/menus/{menu_id}', response_model=MenuResponse, status_code=200)
-def get_menu(menu_id: uuid.UUID, db: Session = Depends(get_db)):
-    """Ручка для получения детальной информации меню по айдишнику"""
-    menu = get_menu_by_id(db, menu_id)
-    return menu
-
-
-
-@app.get('/api/v1/menus/{menu_id}', response_model=MenuResponse, status_code=200)
-def get_menu_detail(menu_id: uuid.UUID, db: Session = Depends(get_db)):
-    menu = get_menu_by_id(db, menu_id)
-    return menu
-
-
-@app.patch('/api/v1/menus/{menu_id}', response_model=MenuResponse, status_code=200)
-def update(menu_id:uuid.UUID, data:MenuUpdate, db: Session = Depends(get_db)) -> str:
+@app.patch('/api/v1/menus/{menu_id}')
+def update(menu_id:uuid.UUID, data:MenuUpdate, db: Session = Depends(get_db)):
     menu = update_menu(db=db, menu_id=menu_id, data=data)
     return menu
 
-
-# @app.get('{{LOCAL_URL}}/api/v1/menus', response_model=MenuResponse, status_code=200)
-# def get_local_url_menu(data: MenuResponse, db: Session = Depends(get_db)):
-#     menu_url = get_local_url_menu(data, db)
-#     return menu_url
-
-
-
-# @app.get('{{LOCAL_URL}}/api/v1/menus/{{target_menu_id}}')
-# def get_local_by_menu_id(target_menu_id, title, description):
-#     id_menu = get_menu_by_id(target_menu_id, title,description, target_menu_id)
-#     return id_menu
+# delete menu
+@app.delete('/api/v1/menus/{menu_id}')
+def delete_menu(menu_id:uuid.UUID, db: Session = Depends(get_db)):
+    remove_menu(menu_id=menu_id, db=db)
+    return {}
 
 
+# Submenu
+@app.get('/api/v1/menus/{api_test_menu_id}/submenus')
+def get_submenu_(db: Session = Depends(get_db)):
+    submenu = get_submenu_all(db)
+    return submenu
+
+@app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
+def submenu_menu(menu_id:uuid.UUID, submenu_id:uuid.UUID, db: Session = Depends(get_db)):
+    return get_submenu_with_menu(menu_id, submenu_id, db)
 
 
-# @app.get('{{LOCAL_URL}}/api/v1/menus/{{target_menu_id}}', status_code=200)
-# def check_menu_by_id(menu):
-#     menu = get_menu_by_id(menu)
-#     return menu
+@app.post('/api/v1/menus/{submenu_id}/submenus')
+def create_submenus(submenu:uuid.UUID, db: Session = Depends(get_db)):
+    create_new_submenu = create_submenu(submenu, db)
+    return create_new_submenu
 
-
-
-# @app.middleware('http')
-# def db_session_middleware(request: Request, call_next):
-#     """это middleware для того чтобы к реквесту нашу бд сессию прикрепить"""
-#     response = Response('Internal server error', status_code=500)
-#     try:
-#         request.state.db = sessionlocal
-#         response = call_next(request)
-#     finally:
-#         request.state.db.close()
-#     return response
-
+@app.patch('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}')
+def update_submenu_(menu_id:uuid.UUID, submenu_id:uuid.UUID, data:SubmenuUpdate):
+    new_submenu = update_submenu(menu_id=menu_id, submenu_id=submenu_id, data=data)
+    return new_submenu
 
 if __name__ == '__main__':
     uvicorn.run(app)
