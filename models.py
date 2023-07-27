@@ -4,10 +4,9 @@ from sqlalchemy import create_engine, Column, String, ForeignKey, UUID, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
-from starlette.requests import Request
 
 # коннект урл к бд
-connection_url = "postgresql://localhost:5432/(TABLE_NAME)?(DB_USER)&(DB_PASSWORD)"
+connection_url = "postgresql://(HOST):(PORT)/(TABLE_NAME)?(DB_USER)&(DB_PASSWORD)"
 # движок для подключения
 engine = create_engine(connection_url)
 # сессия с привязанным движко
