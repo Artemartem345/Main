@@ -1,7 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Depends, HTTPException
-from starlette.responses import Response
-from starlette import status
+from fastapi import FastAPI, Depends
 from crud import *
 
 app = FastAPI()
@@ -93,7 +91,34 @@ def delete_submenu_(
     )
     return {}
 
+@app.get('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}/dishes')
+def get_dish_(db: Session = Depends(get_db)):
+    dish = get_dish(db=db)
+    return dish
+    
 
+@app.get('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}/dishes/{api_test_dish_id}')
+def get_dish_id_(dish_id:uuid.UUID, db: Session = Depends(get_db)):
+    id_dish = get_dish_by_id(dish_id, db)
+    return id_dish
+
+@app.post('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}/dishes')
+def create_dish_(dish, db:Session = Depends(get_db)):
+    new_dish = create_dish(dish, db)
+    return new_dish
+
+@app.patch('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}/dishes/{api_test_dish_id}')
+def update_dish_(dish_id, title, description, db:Session = Depends(get_db)):
+    return update_dish(
+        dish_id=dish_id,
+        title=title,
+        description=description,
+        db=db
+        )
+    
+@app.delete('/api/v1/menus/{api_test_menu_id}/submenus/{api_test_submenu_id}/dishes/{api_test_dish_id}')
+def delete_dish(dish_id:uuid.UUID, db = Session(get_db)):
+    return remove_dish(dish_id=dish_id, db=db)
 
 
 if __name__ == '__main__':

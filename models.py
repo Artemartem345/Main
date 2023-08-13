@@ -1,12 +1,11 @@
-import uuid
-
-from sqlalchemy import create_engine, Column, String, ForeignKey, UUID, MetaData
+from sqlalchemy import create_engine, Column, String, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
-
+from sqlalchemy.dialects.postgresql import UUID 
+import uuid
 # коннект урл к бд
-connection_url = "postgresql://(HOST):(PORT)/(TABLE_NAME)?(DB_USER)&(DB_PASSWORD)"
+connection_url = "postgresql://polka:qwerty@127.0.0.1:5432/Food_menu"
 # движок для подключения
 engine = create_engine(connection_url)
 # сессия с привязанным движко
